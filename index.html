@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gioco Colori - Maurizio Minieri</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --red: #ef4444;
+            --green: #22c55e;
+            --white: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            color: var(--accent-color);
+        }
+
+        .author {
+            font-size: 0.9em;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        select, button {
+            padding: 10px 16px;
+            font-size: 1em;
+            border-radius: 6px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        select {
+            background-color: #334155;
+            color: white;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            font-weight: bold;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        .stats {
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+
+        .grid-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .grid {
+            display: grid;
+            gap: 6px;
+            background-color: #0f172a;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .cell {
+            width: 45px;
+            height: 45px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell:hover {
+            transform: scale(1.05);
+        }
+
+        .color-0 { background-color: var(--red); }
+        .color-1 { background-color: var(--green); }
+        .color-2 { background-color: var(--white); }
+
+        .status-msg {
+            font-weight: bold;
+            color: var(--green);
+            min-height: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gioco Colori</h1>
+    <div class="author">Autore: Minieri Maurizio</div>
+
+    <div class="controls">
+        <select id="sizeSelect">
+            <option value="2">Matrice 2x2</option>
+            <option value="4" selected>Matrice 4x4</option>
+            <option value="8">Matrice 8x8</option>
+        </select>
+        <button onclick="inizializzaGioco()">Nuova Partita</button>
+        <button onclick="risolviAutomatico()">Risolvi (Algoritmo C)</button>
+    </div>
+
+    <div class="stats">Mosse: <span id="movesCount">0</span></div>
+    
+    <div class="grid-container">
+        <div id="grid" class="grid"></div>
+    </div>
+
+    <div id="status" class="status-msg"></div>
+</div>
+
+<script>
+    let n = 4;
+    let A = [];
+    let mosse = 0;
+
+    function creaMatrice(size) {
+        let mat = [];
+        for (let i = 0; i < size; i++) {
+            mat[i] = [];
+            for (let j = 0; j < size; j++) {
+                mat[i][j] = Math.floor(Math.random() * 3);
+            }
+        }
+        return mat;
+    }
+
+    function inizializzaGioco() {
+        n = parseInt(document.getElementById('sizeSelect').value);
+        A = creaMatrice(n);
+        mosse = 0;
+        document.getElementById('movesCount').innerText = mosse;
+        document.getElementById('status').innerText = '';
+        disegnaGriglia();
+    }
+
+    function disegnaGriglia() {
+        const gridEl = document.getElementById('grid');
+        gridEl.style.gridTemplateColumns = `repeat(${n}, 45px)`;
+        gridEl.innerHTML = '';
+
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                const cell = document.createElement('div');
+                cell.className = `cell color-${A[i][j]}`;
+                cell.onclick = () => gestioneClick(i, j);
+                gridEl.appendChild(cell);
+            }
+        }
+    }
+
+    function cambia(i, j, x) {
+        let targetI = i, targetJ = j;
+        if (x === 'e') targetJ = j + 1;
+        if (x === 'n') targetI = i - 1;
+        if (x === 'o') targetJ = j - 1;
+        if (x === 's') targetI = i + 1;
+
+        if (targetI < 0 || targetI >= n || targetJ < 0 || targetJ >= n) return;
+
+        if (A[i][j] !== A[targetI][targetJ]) {
+            mosse++;
+            let sum = A[i][j] + A[targetI][targetJ];
+            let val = (sum === 1) ? 2 : (sum === 2) ? 1 : 0;
+            
+            A[i][j] = val;
+            A[targetI][targetJ] = val;
+        }
+    }
+
+    function gestioneClick(i, j) {
+        if (check(A, n, n)) return;
+        
+        let dir = prompt("Scegli direzione da modificare:\n(e = Est, s = Sud, n = Nord, o = Ovest)", "e");
+        if (dir && ['e', 's', 'n', 'o'].includes(dir.toLowerCase())) {
+            cambia(i, j, dir.toLowerCase());
+            aggiornaInterfaccia();
+        }
+    }
+
+    function check(A, n, m) {
+        let num = A[0][0];
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < m; j++) {
+                if (A[i][j] !== num) return 0;
+            }
+        }
+        return 1;
+    }
+
+    function aggiornaInterfaccia() {
+        document.getElementById('movesCount').innerText = mosse;
+        disegnaGriglia();
+        if (check(A, n, n) === 1) {
+            document.getElementById('status').innerText = "Complimenti! La matrice è risolta!";
+        }
+    }
+
+    // --- TRADUZIONE ALGORITMO C ---
+
+    function risoluzione2x2(i, j) {
+        cambia(i, j, 'e');
+        cambia(i + 1, j, 'e');
+        cambia(i, j, 's');
+        cambia(i, j + 1, 's');
+    }
+
+    function uOrizzontale4x4(i, j, m) {
+        cambia(i, j + 1, 'e');
+        cambia(i, j, 'e');
+        cambia(i, j + 2, 'e');
+        for (let k = 0; k < m; k++) {
+            cambia(i, k, 's');
+        }
+    }
+
+    function uVerticale4x4(i, j, m) {
+        cambia(i + 1, j, 's');
+        cambia(i, j, 's');
+        cambia(i + 2, j, 's');
+        for (let k = 0; k < m; k++) {
+            cambia(k, j, 'e');
+        }
+    }
+
+    function risolviAutomatico() {
+        mosse = 0;
+        
+        for (let i = 0; i < n; i += 2) {
+            for (let j = 0; j < n; j += 2) {
+                risoluzione2x2(i, j);
+            }
+        }
+
+        let risolta = check(A, n, n);
+        if (risolta !== 1) {
+            for (let i = 0; i < n; i += 2) {
+                for (let j = 0; j < n; j += n / 2) {
+                    uOrizzontale4x4(i, j, n);
+                }
+            }
+
+            for (let i = 0; i < n; i += 4) {
+                for (let j = 0; j < n; j += 2) {
+                    uVerticale4x4(i, j, n);
+                }
+            }
+
+            risolta = check(A, n, n);
+
+            if (risolta !== 1 && n === 8) {
+                for (let i = 0; i < n; i += 2) {
+                    uOrizzontale4x4(i, 2, n);
+                    uOrizzontale4x4(i, 0, n);
+                    uOrizzontale4x4(i, 2, n);
+                    uOrizzontale4x4(i, 0, n);
+                    uOrizzontale4x4(i, 4, n);
+                }
+
+                for (let j = 0; j < n; j += 2) {
+                    uVerticale4x4(2, j, n);
+                    uVerticale4x4(0, j, n);
+                    uVerticale4x4(2, j, n);
+                    uVerticale4x4(0, j, n);
+                    uVerticale4x4(4, j, n);
+                }
+            }
+        }
+
+        aggiornaInterfaccia();
+        document.getElementById('status').innerText = "L'algoritmo ha risolto il gioco!";
+    }
+
+    // Avvio automatico prima partita
+    inizializzaGioco();
+</script>
+
+</body>
+</html>
