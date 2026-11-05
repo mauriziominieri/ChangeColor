@@ -34,7 +34,7 @@
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
             text-align: center;
-            max-width: 500px;
+            max-width: 520px;
             width: 100%;
         }
 
@@ -46,8 +46,50 @@
         .author {
             font-size: 0.9em;
             color: #94a3b8;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
+
+        /* Spiegazione delle regole */
+        .instructions {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 0.88em;
+            line-height: 1.5;
+        }
+
+        .instructions h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+            color: var(--accent-color);
+            text-align: center;
+        }
+
+        .instructions ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 4px;
+        }
+
+        .color-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85em;
+            color: #0f172a;
+        }
+
+        .badge-red { background-color: var(--red); color: white; }
+        .badge-green { background-color: var(--green); color: white; }
+        .badge-white { background-color: var(--white); color: #0f172a; }
 
         .controls {
             margin-bottom: 20px;
@@ -132,6 +174,23 @@
 <div class="container">
     <h1>Gioco Colori</h1>
     <div class="author">Autore: Minieri Maurizio</div>
+
+    <!-- Sezione Spiegazione Regole -->
+    <div class="instructions">
+        <h2>Come si gioca?</h2>
+        <p>L'obiettivo è rendere <strong>tutta la matrice di un unico colore</strong> nel minor numero di mosse possibile.</p>
+        <ul>
+            <li>Clicca su una casella e scegli una direzione (<strong>e</strong> = Est, <strong>s</strong> = Sud, <strong>n</strong> = Nord, <strong>o</strong> = Ovest).</li>
+            <li>Le due caselle adiacenti cambieranno colore assumendo il <strong>terzo colore mancante</strong>:
+                <ul>
+                    <li><span class="color-badge badge-red">Rosso</span> + <span class="color-badge badge-green">Verde</span> &rarr; diventano entrambi <span class="color-badge badge-white">Bianco</span></li>
+                    <li><span class="color-badge badge-red">Rosso</span> + <span class="color-badge badge-white">Bianco</span> &rarr; diventano entrambi <span class="color-badge badge-green">Verde</span></li>
+                    <li><span class="color-badge badge-green">Verde</span> + <span class="color-badge badge-white">Bianco</span> &rarr; diventano entrambi <span class="color-badge badge-red">Rosso</span></li>
+                </ul>
+            </li>
+            <li>Se le due caselle hanno già lo stesso colore, la mossa non ha effetto.</li>
+        </ul>
+    </div>
 
     <div class="controls">
         <select id="sizeSelect">
